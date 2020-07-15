@@ -1,0 +1,1 @@
+CREATE TABLE plants (plant TEXT PRIMARY KEY );

@@ -1,0 +1,43 @@
+version: '3'
+services:
+  frontend:
+    container_name: frontend
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - '.:/app'
+      - '/app/node_modules'
+    ports:
+      - '8000:8000'
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    stdin_open: true
+    depends_on:
+      - db
+      - server
+
+  server:
+    image: postgrest/postgrest
+    ports:
+      - "3000:3000"
+    links:
+      - db:db
+    environment:
+      PGRST_DB_URI: postgres://postgres:robin890@db:5432/automatic_irrigation
+      PGRST_DB_SCHEMA: public
+      PGRST_DB_ANON_ROLE: postgres
+      PGRST_SERVER_PROXY_URI: "http://127.0.0.1:3000"
+    depends_on:
+      - db
+
+  db:
+    image: postgres
+    ports:
+      - "65432:5432"
+    environment:
+      POSTGRES_DB: automatic_irrigation
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: robin890
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
